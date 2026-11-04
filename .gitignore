@@ -1,0 +1,26 @@
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Logs
+*.log
+
+# Environment variables (keep a shareable example)
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Local agent instructions, skills, and plans
+AGENTS.md
+agents.md
+SKILL.md
+.agents/
+.codex/
+skills/
+plans/
+PLAN.md
+plan.md
