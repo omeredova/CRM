@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, NavLink } from 'react-router'
 
 import type { Profile } from '@/features/auth/profile'
 import { signOut } from '@/features/auth/api'
@@ -38,6 +38,10 @@ export function AppLayout({ email, profile, accessError, children, onNameSaved }
       <header className="border-b bg-card px-4 py-4 sm:px-6">
         <div className="mx-auto flex w-full min-w-0 max-w-5xl flex-wrap items-center gap-4">
           <Link to="/" className="mr-auto rounded-md text-lg font-semibold focus-visible:outline-2 focus-visible:outline-ring">CRM</Link>
+          {profile?.role === 'executor' && !accessError && <nav aria-label="Основная навигация" className="flex flex-wrap gap-4 text-sm">
+            <NavLink to="/" end className="rounded-md underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring aria-[current=page]:font-semibold aria-[current=page]:underline">Объекты</NavLink>
+            <NavLink to="/tasks" className="rounded-md underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring aria-[current=page]:font-semibold aria-[current=page]:underline">Мои задачи</NavLink>
+          </nav>}
           <p className="min-w-0 break-words text-sm text-muted-foreground">
             {profile
               ? `${profile.full_name.trim() || email || 'Пользователь'} · ${profile.role === 'manager' ? 'Постановщик' : 'Исполнитель'}`
