@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router'
 
 import type { CrmRole } from '@/features/auth/profile'
+import { TaskActions } from '@/features/tasks/task-actions'
 import { TaskStatusActions } from '@/features/tasks/task-status-actions'
 import { taskStatusLabels } from '@/features/tasks/api'
 import { useTaskDetails } from '@/features/tasks/use-task-details'
@@ -41,6 +42,7 @@ function TaskDetails({ id, user }: { id: string; user: { id: string; role: CrmRo
       <div><dt className="text-muted-foreground">Дата создания</dt><dd><time dateTime={task.created_at}>{dateFormat.format(new Date(task.created_at))}</time></dd></div>
       <div className="min-w-0 sm:col-span-2"><dt className="text-muted-foreground">Описание</dt><dd><ExpandableText text={task.description.trim() ? task.description : 'Описание не указано.'} label="Описание задачи" /></dd></div>
     </dl>
+    {user.role === 'manager' && <TaskActions task={task} onChanged={retry} />}
     <TaskStatusActions task={task} user={user} onChanged={retry} />
     <TaskHistory history={history} names={names} />
   </article>

@@ -1,4 +1,5 @@
 import { supabase } from '@/shared/api/supabase'
+import { validateTaskInput } from './task-mutations'
 
 export const taskStatusLabels = {
   new: 'Новая',
@@ -57,9 +58,8 @@ export type CreateTaskInput = {
 export async function createTask(input: CreateTaskInput): Promise<string | null> {
   const title = input.title.trim()
   const description = input.description.trim()
-  if (!title || title.length > 300) return 'Укажите название задачи до 300 символов.'
-  if (description.length > 20000) return 'Описание не должно превышать 20 000 символов.'
-  if (!input.assigneeId) return 'Выберите исполнителя.'
+  const failure = validateTaskInput(input)
+  if (failure) return failure
   try {
     const { error } = await supabase.from('tasks').insert({
       title, description, object_id: input.objectId, assignee_id: input.assigneeId,
