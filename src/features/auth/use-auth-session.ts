@@ -63,10 +63,18 @@ export function useAuthSession() {
 
   const currentProfile = profileState?.session === session ? profileState : null
 
+  function updateProfileName(updated: Profile) {
+    setProfileState((current) => {
+      if (!current?.profile || current.session.user.id !== updated.id) return current
+      return { ...current, profile: { ...current.profile, full_name: updated.full_name, first_name: updated.first_name, last_name: updated.last_name, name_set_at: updated.name_set_at } }
+    })
+  }
+
   return {
     session,
     profile: currentProfile?.profile ?? null,
     loading: auth.loading || Boolean(session && !currentProfile),
     error: auth.error ?? currentProfile?.error ?? null,
+    updateProfileName,
   }
 }

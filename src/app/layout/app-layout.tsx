@@ -3,13 +3,15 @@ import { Link } from 'react-router'
 
 import type { Profile } from '@/features/auth/profile'
 import { signOut } from '@/features/auth/api'
+import { EditProfileName } from '@/features/auth/edit-profile-name'
 import { Button } from '@/shared/ui/button'
 
-export function AppLayout({ email, profile, accessError, children }: {
+export function AppLayout({ email, profile, accessError, children, onNameSaved }: {
   email: string | undefined
   profile?: Profile | null
   accessError?: string
   children?: ReactNode
+  onNameSaved?: (profile: Profile) => void
 }) {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +43,7 @@ export function AppLayout({ email, profile, accessError, children }: {
               ? `${profile.full_name.trim() || email || 'Пользователь'} · ${profile.role === 'manager' ? 'Постановщик' : 'Исполнитель'}`
               : email ?? 'Проверка доступа'}
           </p>
+          {profile && !accessError && onNameSaved && <EditProfileName key={profile.id} profile={profile} email={email} onSaved={onNameSaved} />}
           <Button type="button" variant="outline" onClick={handleSignOut} disabled={pending}>
             {pending ? 'Выходим…' : 'Выйти'}
           </Button>
