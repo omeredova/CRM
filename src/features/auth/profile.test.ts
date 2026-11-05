@@ -8,25 +8,28 @@ const eq = vi.fn(() => ({ maybeSingle: single }))
 const select = vi.fn(() => ({ eq }))
 const from = vi.fn(() => ({ select }))
 const client = { from } as unknown as SupabaseClient
+const validProfile = { id: 'user-id', full_name: '', first_name: '', last_name: '', name_set_at: null, role: 'executor' }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('CRM profile validation', () => {
   it.each(['manager', 'executor'])('loads the authenticated user with role %s', async (role) => {
-    const profile = { id: 'user-id', full_name: '', role }
+    const profile = { id: 'user-id', full_name: '', first_name: '', last_name: '', name_set_at: null, role }
     single.mockResolvedValueOnce({ data: profile, error: null })
     expect(await getUserProfile(client, 'user-id')).toEqual({ profile, error: null })
     expect(from).toHaveBeenCalledWith('profiles')
-    expect(select).toHaveBeenCalledWith('id, full_name, role')
+    expect(select).toHaveBeenCalledWith('id, full_name, first_name, last_name, name_set_at, role')
     expect(eq).toHaveBeenCalledWith('id', 'user-id')
   })
 
   it.each([
     null,
-    { id: 'user-id', full_name: '', role: 'admin' },
-    { id: 'user-id', full_name: '', role: null },
-    { id: 'other-user', full_name: '', role: 'manager' },
-    { id: 'user-id', full_name: null, role: 'executor' },
+    { ...validProfile, role: 'admin' },
+    { ...validProfile, role: null },
+    { ...validProfile, id: 'other-user', role: 'manager' },
+    { ...validProfile, full_name: null },
+    { ...validProfile, first_name: null },
+    { ...validProfile, name_set_at: 123 },
   ])('denies missing or invalid profiles: %j', async (data) => {
     single.mockResolvedValueOnce({ data, error: null })
     const result = await getUserProfile(client, 'user-id')
