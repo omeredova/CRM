@@ -1,5 +1,7 @@
 import { Link, useParams } from 'react-router'
 
+import type { CrmRole } from '@/features/auth/profile'
+import { TaskStatusActions } from '@/features/tasks/task-status-actions'
 import { taskStatusLabels } from '@/features/tasks/api'
 import { useTaskDetails } from '@/features/tasks/use-task-details'
 import { TaskHistory } from '@/features/tasks/task-history'
@@ -9,7 +11,7 @@ import { ExpandableText } from '@/shared/ui/expandable-text'
 const dateFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'medium', timeStyle: 'short' })
 const linkClass = 'rounded-md text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring'
 
-function TaskDetails({ id }: { id: string }) {
+function TaskDetails({ id, user }: { id: string; user: { id: string; role: CrmRole } }) {
   const { state, retry } = useTaskDetails(id)
   if (state.status === 'loading') return <p role="status" className="text-sm text-muted-foreground">Загружаем задачу и историю…</p>
   if (state.status === 'not-found') return <div className="grid justify-items-start gap-4">
@@ -39,11 +41,12 @@ function TaskDetails({ id }: { id: string }) {
       <div><dt className="text-muted-foreground">Дата создания</dt><dd><time dateTime={task.created_at}>{dateFormat.format(new Date(task.created_at))}</time></dd></div>
       <div className="min-w-0 sm:col-span-2"><dt className="text-muted-foreground">Описание</dt><dd><ExpandableText text={task.description.trim() ? task.description : 'Описание не указано.'} label="Описание задачи" /></dd></div>
     </dl>
+    <TaskStatusActions task={task} user={user} onChanged={retry} />
     <TaskHistory history={history} names={names} />
   </article>
 }
 
-export function TaskPage() {
+export function TaskPage({ user }: { user: { id: string; role: CrmRole } }) {
   const { id = '' } = useParams<'id'>()
-  return <TaskDetails key={id} id={id} />
+  return <TaskDetails key={id} id={id} user={user} />
 }
