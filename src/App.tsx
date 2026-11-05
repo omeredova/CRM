@@ -5,6 +5,7 @@ import { useAuthSession } from '@/features/auth/use-auth-session'
 import { HomePage } from '@/pages/home/home-page'
 import { LoginPage } from '@/pages/login/login-page'
 import { ObjectPage } from '@/pages/object/object-page'
+import { TaskPage } from '@/pages/task/task-page'
 
 function App() {
   const { session, profile, loading, error, updateProfileName } = useAuthSession()
@@ -27,6 +28,7 @@ function App() {
       <Route path="/" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><HomePage key={`${profile.id}:${profile.role}`} role={profile.role} /></AppLayout> : <Navigate to="/login" replace />} />
       <Route path="/objects" element={<Navigate to={session ? '/' : '/login'} replace />} />
       <Route path="/objects/:id" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><ObjectPage key={profile.id} role={profile.role} /></AppLayout> : <Navigate to="/login" replace />} />
+      <Route path="/tasks/:id" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><TaskPage key={`${profile.id}:${profile.role}`} /></AppLayout> : <Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to={session ? '/' : '/login'} replace />} />
     </Routes>
   )

@@ -52,7 +52,7 @@ function ObjectDetails({ id, role }: { id: string; role: CrmRole }) {
                 <TableHeader><TableRow><TableHead>Название</TableHead><TableHead className="w-36 sm:w-44">Статус</TableHead></TableRow></TableHeader>
                 <TableBody>{state.tasks.map((task) => (
                   <TableRow key={task.id}>
-                    <TableCell className="break-words font-medium">{task.title}</TableCell>
+                    <TableCell className="break-words font-medium"><Link to={`/tasks/${task.id}`} className="rounded-md underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">{task.title}</Link></TableCell>
                     <TableCell><span className="inline-flex rounded-md border bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground">{taskStatusLabels[task.status]}</span></TableCell>
                   </TableRow>
                 ))}</TableBody>
