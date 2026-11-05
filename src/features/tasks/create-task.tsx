@@ -1,9 +1,9 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { Button } from '@/shared/ui/button'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
+import { Modal, ModalForm } from '@/shared/ui/modal'
 import { NativeSelect } from '@/shared/ui/native-select'
 import { Textarea } from '@/shared/ui/textarea'
 import { createTask, getExecutors, type Executor } from './api'
@@ -13,17 +13,13 @@ type ExecutorsState =
   | { status: 'success'; executors: Executor[] }
   | { status: 'error'; error: string }
 
-function CreateTaskForm({ objectId, onCreated, onPendingChange }: {
+function CreateTaskForm({ objectId, onCreated }: {
   objectId: string
   onCreated: () => void
-  onPendingChange: (value: boolean) => void
 }) {
   const id = useId()
   const [attempt, setAttempt] = useState(0)
   const [executors, setExecutors] = useState<ExecutorsState>({ status: 'loading' })
-  const [error, setError] = useState<string | null>(null)
-  const [pending, setPending] = useState(false)
-  const submitting = useRef(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -33,47 +29,31 @@ function CreateTaskForm({ objectId, onCreated, onPendingChange }: {
     return () => controller.abort()
   }, [attempt])
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (submitting.current || executors.status !== 'success') return
-    const form = new FormData(event.currentTarget)
+  async function submit(form: FormData) {
+    if (executors.status !== 'success') return 'Дождитесь загрузки исполнителей.'
     const title = form.get('title')
     const description = form.get('description')
     const assigneeId = form.get('assignee')
     if (typeof title !== 'string' || typeof description !== 'string' || typeof assigneeId !== 'string') {
-      setError('Проверьте заполнение полей задачи.')
-      return
+      return 'Проверьте заполнение полей задачи.'
     }
     if (!executors.executors.some((executor) => executor.id === assigneeId)) {
-      setError('Выберите исполнителя из списка.')
-      return
+      return 'Выберите исполнителя из списка.'
     }
-    submitting.current = true
-    setPending(true)
-    onPendingChange(true)
-    setError(null)
-    try {
-      const failure = await createTask({ title, description, assigneeId, objectId })
-      if (failure) setError(failure)
-      else onCreated()
-    } finally {
-      submitting.current = false
-      setPending(false)
-      onPendingChange(false)
-    }
+    return createTask({ title, description, assigneeId, objectId })
   }
 
-  const canSubmit = executors.status === 'success' && executors.executors.length > 0 && !pending
+  const canSubmit = executors.status === 'success' && executors.executors.length > 0
 
   return (
-    <form onSubmit={submit} className="grid min-w-0 gap-4" aria-busy={pending}>
+    <ModalForm onSubmit={submit} onSuccess={onCreated} submitLabel="Создать задачу" pendingLabel="Создаём…" disabled={!canSubmit}>
       <div className="grid gap-2">
         <Label htmlFor={`${id}-title`}>Название</Label>
-        <Input id={`${id}-title`} name="title" required maxLength={300} disabled={pending} aria-describedby={error ? `${id}-error` : undefined} />
+        <Input id={`${id}-title`} name="title" required maxLength={300} />
       </div>
       <div className="grid gap-2">
         <Label htmlFor={`${id}-description`}>Описание (необязательно)</Label>
-        <Textarea id={`${id}-description`} name="description" maxLength={20000} disabled={pending} />
+        <Textarea id={`${id}-description`} name="description" maxLength={20000} />
       </div>
       <div className="grid min-w-0 gap-2">
         <Label htmlFor={`${id}-assignee`}>Исполнитель</Label>
@@ -93,28 +73,19 @@ function CreateTaskForm({ objectId, onCreated, onPendingChange }: {
           </div>}
         </div>
       </div>
-      {error && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{error}</p>}
-      <div className="flex flex-wrap justify-end gap-2">
-        <DialogClose render={<Button type="button" variant="outline" disabled={pending} />}>Отмена</DialogClose>
-        <Button type="submit" disabled={!canSubmit}>{pending ? 'Создаём…' : 'Создать задачу'}</Button>
-      </div>
-    </form>
+    </ModalForm>
   )
 }
 
 export function CreateTask({ objectId, onCreated }: { objectId: string; onCreated: () => void }) {
   const [open, setOpen] = useState(false)
-  const pending = useRef(false)
   const trigger = useRef<HTMLButtonElement>(null)
 
   return <>
     <Button ref={trigger} type="button" onClick={() => setOpen(true)}>Создать задачу</Button>
-    <Dialog open={open} onOpenChange={(next) => { if (!pending.current) setOpen(next) }}>
-      <DialogContent finalFocus={trigger} className="grid gap-4">
-        <DialogTitle>Создание задачи</DialogTitle>
-        <DialogDescription>Задача будет добавлена к текущему объекту со статусом «Новая».</DialogDescription>
-        {open && <CreateTaskForm objectId={objectId} onPendingChange={(value) => { pending.current = value }} onCreated={() => { setOpen(false); onCreated() }} />}
-      </DialogContent>
-    </Dialog>
+    <Modal open={open} onOpenChange={setOpen} finalFocus={trigger} title="Создание задачи"
+      description="Задача будет добавлена к текущему объекту со статусом «Новая».">
+      <CreateTaskForm objectId={objectId} onCreated={() => { setOpen(false); onCreated() }} />
+    </Modal>
   </>
 }
