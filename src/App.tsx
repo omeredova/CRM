@@ -26,7 +26,7 @@ function App() {
       <Route path="/login" element={session ? <Navigate to="/" replace /> : <LoginPage />} />
       <Route path="/" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><HomePage key={`${profile.id}:${profile.role}`} role={profile.role} /></AppLayout> : <Navigate to="/login" replace />} />
       <Route path="/objects" element={<Navigate to={session ? '/' : '/login'} replace />} />
-      <Route path="/objects/:id" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><ObjectPage key={profile.id} /></AppLayout> : <Navigate to="/login" replace />} />
+      <Route path="/objects/:id" element={session && profile ? <AppLayout email={session.user.email} profile={profile} onNameSaved={updateProfileName}><ObjectPage key={profile.id} role={profile.role} /></AppLayout> : <Navigate to="/login" replace />} />
       <Route path="*" element={<Navigate to={session ? '/' : '/login'} replace />} />
     </Routes>
   )
